@@ -445,35 +445,9 @@
 
   <script>
     // ── IMAGE DATA ──
-    const COVER_IMG = 'https://drive.google.com/uc?export=view&id=1yV-1hloCvuFg2Dv_9jSlSOQGxfz31OOV';
+    const COVER_IMG = 'images/1.jpg';
 
-    const PAGES = [
-      'https://drive.google.com/uc?export=view&id=1yV-1hloCvuFg2Dv_9jSlSOQGxfz31OOV',
-      'https://drive.google.com/uc?export=view&id=14SoBUIZX_pN8tknZSck1uhHbrSo5ieFe',
-      'https://drive.google.com/uc?export=view&id=1FZj1mg-F1N4apnYYMiZLXCEw-iUOLnYk',
-      'https://drive.google.com/uc?export=view&id=1OvUJP0MfqKl_JMxLQbkv6tDAU5-t6CB9',
-      'https://drive.google.com/uc?export=view&id=1S-3PuRa2kokTmlCrMRRXbPfLNnRyH_cZ',
-      'https://drive.google.com/uc?export=view&id=1g6mB3LZKGg3KB6RoHrmn81mIwmK20JEt',
-      'https://drive.google.com/uc?export=view&id=1lrDp1HcukYWbXGe7IGfgM3zYjwMnC6HG',
-      'https://drive.google.com/uc?export=view&id=1ORZaLOfBRjgToW-JryciqTNYBg8PdcKO',
-      'https://drive.google.com/uc?export=view&id=1aZtFMtT_1XD5B7r_Df8NKhdhb4FhDsxF',
-      'https://drive.google.com/uc?export=view&id=1bNurpYavUOr1j2Yu-fo1_cioebryeCub',
-      'https://drive.google.com/uc?export=view&id=1lu1MqxCkYGG2_o58ZJufC0vivYPVgIXu',
-      'https://drive.google.com/uc?export=view&id=1kd5FGQGv4Tg2OwodbXcz9svM6HKaESKT',
-      'https://drive.google.com/uc?export=view&id=1AVC7MAXBkbSGq4bf9WI65UShQt8VQJDQ',
-      'https://drive.google.com/uc?export=view&id=1CZ9Ch-nmeuX_neetgo-V5lfBi3flwzp7',
-      'https://drive.google.com/uc?export=view&id=1HRJFqs4eYJ06-85_0IVPXLu1en_c9_H1',
-      'https://drive.google.com/uc?export=view&id=10Hj4epVzAp-oBhxTIeWctVIa21kg0rjB',
-      'https://drive.google.com/uc?export=view&id=1JoAIX8N2C3TkuhZIuq4oy_gwPrKfkKI4',
-      'https://drive.google.com/uc?export=view&id=12xpnAvYVxzniYF5jAvYeDppiFM-n4fDX',
-      'https://drive.google.com/uc?export=view&id=1g7WrsXdoApJdL2fXLE3ExNlYQX0PA62f',
-      'https://drive.google.com/uc?export=view&id=1KmJj-rhX8EYHmTMhnLFv9NRH-NAXLFJ4',
-      'https://drive.google.com/uc?export=view&id=1L7qfqr14w2Bxzg0YH33g2K6n4By8HQvC',
-      'https://drive.google.com/uc?export=view&id=1jP-cr1MQyQXLZYZXocls536JRwDFSX5r',
-      'https://drive.google.com/uc?export=view&id=1K1xsiu02gGw-5VwlWiJY2F736mWK-4aQ',
-      'https://drive.google.com/uc?export=view&id=1JY6OaN_q6meFeRz1Ta8DHW6wuzKROGPB',
-      'https://drive.google.com/uc?export=view&id=1xF6WRjZQ1gpWB7vyVKKW2EyQISvJUoZr',
-    ];
+    const PAGES = Array.from({length: 25}, (_, i) => `images/${i + 1}.jpg`);
 
     // Add translations here as you get them — key = page index (0-based), value = English translation
     const TRANSLATIONS = {
