@@ -242,27 +242,31 @@
 
     .spread-container {
       width: 100%;
-      max-width: 920px;
+      max-width: 1200px;
       position: relative;
     }
 
-    .spread-img {
+    .spread-pair {
+      display: flex;
+      gap: 4px;
       width: 100%;
-      display: block;
-      border-radius: 2px;
-      border: 0.5px solid var(--border);
       transition: opacity 0.25s ease, transform 0.25s ease;
     }
 
-    .spread-img.turning {
-      opacity: 0;
-      transform: translateX(20px);
+    .spread-pair.turning { opacity: 0; transform: translateX(20px); }
+    .spread-pair.turning-back { opacity: 0; transform: translateX(-20px); }
+
+    .spread-pair .page-img {
+      width: 50%;
+      display: block;
+      border-radius: 2px;
+      border: 0.5px solid var(--border);
+      cursor: zoom-in;
+      object-fit: contain;
     }
 
-    .spread-img.turning-back {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
+    .spread-pair.single { justify-content: center; }
+    .spread-pair.single .page-img { width: 50%; }
 
     /* ── PAGE NAV ── */
     .page-nav {
@@ -425,7 +429,10 @@
       <div style="width:80px;"></div>
     </div>
     <div class="spread-container">
-      <img class="spread-img" id="spreadImg" src="" alt="Scrapbook spread" onclick="openZoom()" style="cursor:zoom-in;" />
+      <div class="spread-pair" id="spreadPair">
+        <img class="page-img" id="leftImg" src="" alt="Left page" onclick="openZoom(0)" />
+        <img class="page-img" id="rightImg" src="" alt="Right page" onclick="openZoom(1)" />
+      </div>
     </div>
     <div class="page-nav">
       <div class="nav-arrow disabled" id="prevBtn" onclick="changePage(-1)">&#8592;</div>
@@ -449,7 +456,21 @@
 
     const PAGES = Array.from({length: 26}, (_, i) => `${i + 1}.jpg`);
 
-    // Add translations here as you get them — key = page index (0-based), value = English translation
+    // Spreads: [0] = cover alone, then pairs [1,2], [3,4], etc.
+    // spread index 0 = page 1 (cover, single)
+    // spread index 1 = pages 2+3, spread index 2 = pages 4+5, etc.
+    function getSpread(spreadIdx) {
+      if (spreadIdx === 0) return { left: PAGES[0], right: null };
+      const leftIdx = 1 + (spreadIdx - 1) * 2;
+      const rightIdx = leftIdx + 1;
+      return {
+        left: PAGES[leftIdx] || null,
+        right: PAGES[rightIdx] || null
+      };
+    }
+
+    const totalSpreads = 1 + Math.ceil((PAGES.length - 1) / 2);
+
     const TRANSLATIONS = {
       0: 'Yokohama all-men\'s yacht race',
       1: 'Riding to Kamakura',
@@ -461,10 +482,9 @@
       7: 'Cycling — found a snake on the road!',
     };
 
-    let currentPage = 0;
-    const totalPages = PAGES.length;
+    let currentSpread = 0;
+    let zoomSide = 0;
 
-    // ── BUILD GRID ──
     function buildGrid() {
       const grid = document.getElementById('albumsGrid');
       for (let i = 0; i < 15; i++) {
@@ -487,7 +507,6 @@
       }
     }
 
-    // ── NAVIGATION ──
     function goTo(screen) {
       document.querySelectorAll('.screen').forEach(s => {
         s.classList.remove('active');
@@ -505,63 +524,59 @@
     }
 
     function openReader() {
-      currentPage = 0;
-      renderPage();
+      currentSpread = 0;
+      renderSpread();
       goTo('reader');
     }
 
-    // ── PAGE RENDERING ──
-    function renderPage() {
-      const img = document.getElementById('spreadImg');
-      img.src = PAGES[currentPage];
+    function renderSpread() {
+      const pair = document.getElementById('spreadPair');
+      const leftImg = document.getElementById('leftImg');
+      const rightImg = document.getElementById('rightImg');
+      const { left, right } = getSpread(currentSpread);
+
+      leftImg.src = left || '';
+      leftImg.style.display = left ? 'block' : 'none';
+
+      rightImg.src = right || '';
+      rightImg.style.display = right ? 'block' : 'none';
+
+      pair.classList.toggle('single', !right);
 
       const indicator = document.getElementById('pageIndicator');
-      indicator.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+      if (currentSpread === 0) {
+        indicator.textContent = 'Cover';
+      } else {
+        const leftPage = 1 + (currentSpread - 1) * 2 + 1;
+        const rightPage = right ? leftPage + 1 : null;
+        indicator.textContent = rightPage
+          ? `Pages ${leftPage}–${rightPage} of ${PAGES.length}`
+          : `Page ${leftPage} of ${PAGES.length}`;
+      }
 
-      document.getElementById('prevBtn').classList.toggle('disabled', currentPage === 0);
-      document.getElementById('nextBtn').classList.toggle('disabled', currentPage === totalPages - 1);
-
-      renderTranslationHint();
-    }
-
-    function renderTranslationHint() {
-      const existing = document.getElementById('trans-hint');
-      if (existing) existing.remove();
-
-      const translation = TRANSLATIONS[currentPage];
-      if (!translation) return;
-
-      const container = document.querySelector('.spread-container');
-      const hint = document.createElement('div');
-      hint.id = 'trans-hint';
-      hint.style.cssText = `
-        position:absolute; bottom:0; left:0; right:0; height:18%;
-        cursor:default; z-index:10;
-      `;
-      hint.dataset.translation = translation;
-      hint.addEventListener('mouseenter', showTooltip);
-      hint.addEventListener('mouseleave', hideTooltip);
-      hint.addEventListener('mousemove', moveTooltip);
-      container.appendChild(hint);
+      document.getElementById('prevBtn').classList.toggle('disabled', currentSpread === 0);
+      document.getElementById('nextBtn').classList.toggle('disabled', currentSpread === totalSpreads - 1);
     }
 
     function changePage(dir) {
-      const newPage = currentPage + dir;
-      if (newPage < 0 || newPage >= totalPages) return;
+      const newSpread = currentSpread + dir;
+      if (newSpread < 0 || newSpread >= totalSpreads) return;
 
-      const img = document.getElementById('spreadImg');
-      img.classList.add(dir > 0 ? 'turning' : 'turning-back');
+      const pair = document.getElementById('spreadPair');
+      pair.classList.add(dir > 0 ? 'turning' : 'turning-back');
 
       setTimeout(() => {
-        currentPage = newPage;
-        renderPage();
-        img.classList.remove('turning', 'turning-back');
+        currentSpread = newSpread;
+        renderSpread();
+        pair.classList.remove('turning', 'turning-back');
       }, 220);
     }
 
-    // ── ZOOM ──
-    function openZoom() {
-      document.getElementById('zoom-img').src = PAGES[currentPage];
+    function openZoom(side) {
+      zoomSide = side;
+      const { left, right } = getSpread(currentSpread);
+      const src = side === 0 ? left : (right || left);
+      document.getElementById('zoom-img').src = src;
       document.getElementById('zoom-overlay').classList.add('active');
     }
 
@@ -569,7 +584,6 @@
       document.getElementById('zoom-overlay').classList.remove('active');
     }
 
-    // ── TOOLTIP ──
     function showTooltip(e) {
       const tip = document.getElementById('tooltip');
       tip.textContent = e.currentTarget.dataset.translation;
@@ -587,7 +601,6 @@
       tip.style.top = (e.clientY - 14) + 'px';
     }
 
-    // ── KEYBOARD ──
     document.addEventListener('keydown', e => {
       if (document.getElementById('reader-screen').classList.contains('active')) {
         if (e.key === 'ArrowRight') changePage(1);
@@ -596,7 +609,6 @@
       if (e.key === 'Escape') closeZoom();
     });
 
-    // ── INIT ──
     buildGrid();
   </script>
 </body>
