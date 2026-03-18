@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Miyako's World</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f5f0e8;
+      --ink: #2c2820;
+      --ink-light: rgba(44,40,32,0.45);
+      --ink-mid: rgba(44,40,32,0.65);
+      --border: rgba(44,40,32,0.15);
+      --paper: #ede8dc;
+    }
+
+    html, body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Jost', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 48px;
+      border-bottom: 0.5px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--cream);
+      z-index: 500;
+    }
+
+    .logo {
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      opacity: 0.55;
+      transition: opacity 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-links a:hover { opacity: 1; }
+    .nav-links a.active { opacity: 1; font-weight: 500; }
+
+    /* ── SCREENS ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── GRID SCREEN ── */
+    #grid-screen {
+      padding: 48px 48px 80px;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 36px;
+      font-family: 'Jost', sans-serif;
+      font-weight: 400;
+    }
+
+    .albums-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 28px;
+      max-width: 960px;
+    }
+
+    .album-thumb {
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .album-thumb .cover-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 2px;
+      border: 0.5px solid var(--border);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s;
+      background: var(--paper);
+    }
+
+    .album-thumb:hover .cover-wrap {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 32px rgba(44,40,32,0.12);
+    }
+
+    .album-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .album-thumb .placeholder-cover {
+      width: 100%;
+      height: 100%;
+      background: var(--paper);
+      opacity: 0.4;
+    }
+
+    .album-label {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--ink-light);
+      text-align: center;
+      font-weight: 400;
+    }
+
+    /* ── DETAIL SCREEN ── */
+    #detail-screen {
+      display: none;
+      min-height: calc(100vh - 65px);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 60px 48px;
+      animation: fadeUp 0.4s ease forwards;
+      position: relative;
+    }
+
+    #detail-screen.active { display: flex; }
+
+    .back-btn {
+      position: absolute;
+      top: 32px;
+      left: 48px;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: 'Jost', sans-serif;
+      transition: color 0.2s;
+      padding: 0;
+    }
+
+    .back-btn:hover { color: var(--ink); }
+
+    .detail-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 32px;
+      font-weight: 400;
+    }
+
+    .cover-large-wrap {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .cover-large-wrap:hover { transform: scale(1.02); }
+
+    .cover-large-wrap img {
+      width: 280px;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+      border-radius: 2px;
+      border: 0.5px solid var(--border);
+    }
+
+    .open-hint {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      font-family: 'Jost', sans-serif;
+    }
+
+    /* ── READER SCREEN ── */
+    #reader-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px 80px;
+      min-height: calc(100vh - 65px);
+      position: relative;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    #reader-screen.active { display: flex; }
+
+    .reader-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 920px;
+      margin-bottom: 24px;
+    }
+
+    .reader-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--ink-mid);
+      letter-spacing: 0.04em;
+    }
+
+    .spread-container {
+      width: 100%;
+      max-width: 920px;
+      position: relative;
+    }
+
+    .spread-img {
+      width: 100%;
+      display: block;
+      border-radius: 2px;
+      border: 0.5px solid var(--border);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .spread-img.turning {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+
+    .spread-img.turning-back {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    /* ── PAGE NAV ── */
+    .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .nav-arrow {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 0.5px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink);
+      font-size: 16px;
+      transition: all 0.2s;
+      user-select: none;
+      font-family: 'Jost', sans-serif;
+    }
+
+    .nav-arrow:hover:not(.disabled) {
+      background: rgba(44,40,32,0.06);
+      border-color: rgba(44,40,32,0.4);
+    }
+
+    .nav-arrow.disabled {
+      opacity: 0.2;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .page-indicator {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      min-width: 100px;
+      text-align: center;
+    }
+
+    /* ── ZOOM OVERLAY ── */
+    #zoom-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(20,16,10,0.92);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+      animation: fadeIn 0.2s ease;
+    }
+
+    #zoom-overlay.active { display: flex; }
+
+    #zoom-img {
+      max-width: 88vw;
+      max-height: 88vh;
+      object-fit: contain;
+      border-radius: 2px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    }
+
+    .zoom-close {
+      position: fixed;
+      top: 24px;
+      right: 32px;
+      color: rgba(245,240,232,0.6);
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      transition: color 0.2s;
+    }
+
+    .zoom-close:hover { color: rgba(245,240,232,1); }
+
+    /* ── TOOLTIP ── */
+    #tooltip {
+      position: fixed;
+      background: rgba(20,16,10,0.92);
+      color: #f0ece2;
+      padding: 10px 14px;
+      border-radius: 2px;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 14px;
+      line-height: 1.6;
+      pointer-events: none;
+      z-index: 1500;
+      display: none;
+      max-width: 240px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .nav-links { gap: 20px; }
+      #grid-screen { padding: 32px 20px 60px; }
+      .albums-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      #reader-screen { padding: 20px 12px 60px; }
+      .back-btn { top: 20px; left: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo" onclick="goTo('grid')">Miyako's World</a>
+    <ul class="nav-links">
+      <li><a class="active" onclick="goTo('grid')">Scrapbooks</a></li>
+      <li><a onclick="goTo('grid')">Movies</a></li>
+      <li><a onclick="goTo('grid')">Books</a></li>
+      <li><a onclick="goTo('grid')">Photos</a></li>
+      <li><a onclick="goTo('grid')">About</a></li>
+    </ul>
+  </nav>
+
+  <!-- GRID -->
+  <div id="grid-screen" class="screen active">
+    <div class="section-label">Scrapbooks</div>
+    <div class="albums-grid" id="albumsGrid"></div>
+  </div>
+
+  <!-- DETAIL -->
+  <div id="detail-screen" class="screen">
+    <button class="back-btn" onclick="goTo('grid')">← All albums</button>
+    <div class="detail-title">Album 10</div>
+    <div class="cover-large-wrap" onclick="openReader()">
+      <img id="coverLargeImg" src="" alt="Album 10 cover" />
+      <div class="open-hint">Click to open</div>
+    </div>
+  </div>
+
+  <!-- READER -->
+  <div id="reader-screen" class="screen">
+    <div class="reader-top">
+      <button class="back-btn" style="position:relative;top:auto;left:auto;" onclick="goTo('detail')">← Close album</button>
+      <div class="reader-title">Miyako's Scrapbook — Album 10</div>
+      <div style="width:80px;"></div>
+    </div>
+    <div class="spread-container">
+      <img class="spread-img" id="spreadImg" src="" alt="Scrapbook spread" onclick="openZoom()" style="cursor:zoom-in;" />
+    </div>
+    <div class="page-nav">
+      <div class="nav-arrow disabled" id="prevBtn" onclick="changePage(-1)">&#8592;</div>
+      <div class="page-indicator" id="pageIndicator">Page 1 of 25</div>
+      <div class="nav-arrow" id="nextBtn" onclick="changePage(1)">&#8594;</div>
+    </div>
+  </div>
+
+  <!-- ZOOM OVERLAY -->
+  <div id="zoom-overlay" onclick="closeZoom()">
+    <div class="zoom-close">Esc to close</div>
+    <img id="zoom-img" src="" alt="Zoomed view" />
+  </div>
+
+  <!-- TOOLTIP -->
+  <div id="tooltip"></div>
+
+  <script>
+    // ── IMAGE DATA ──
+    const COVER_IMG = 'https://drive.google.com/uc?export=view&id=1yV-1hloCvuFg2Dv_9jSlSOQGxfz31OOV';
+
+    const PAGES = [
+      'https://drive.google.com/uc?export=view&id=1yV-1hloCvuFg2Dv_9jSlSOQGxfz31OOV',
+      'https://drive.google.com/uc?export=view&id=14SoBUIZX_pN8tknZSck1uhHbrSo5ieFe',
+      'https://drive.google.com/uc?export=view&id=1FZj1mg-F1N4apnYYMiZLXCEw-iUOLnYk',
+      'https://drive.google.com/uc?export=view&id=1OvUJP0MfqKl_JMxLQbkv6tDAU5-t6CB9',
+      'https://drive.google.com/uc?export=view&id=1S-3PuRa2kokTmlCrMRRXbPfLNnRyH_cZ',
+      'https://drive.google.com/uc?export=view&id=1g6mB3LZKGg3KB6RoHrmn81mIwmK20JEt',
+      'https://drive.google.com/uc?export=view&id=1lrDp1HcukYWbXGe7IGfgM3zYjwMnC6HG',
+      'https://drive.google.com/uc?export=view&id=1ORZaLOfBRjgToW-JryciqTNYBg8PdcKO',
+      'https://drive.google.com/uc?export=view&id=1aZtFMtT_1XD5B7r_Df8NKhdhb4FhDsxF',
+      'https://drive.google.com/uc?export=view&id=1bNurpYavUOr1j2Yu-fo1_cioebryeCub',
+      'https://drive.google.com/uc?export=view&id=1lu1MqxCkYGG2_o58ZJufC0vivYPVgIXu',
+      'https://drive.google.com/uc?export=view&id=1kd5FGQGv4Tg2OwodbXcz9svM6HKaESKT',
+      'https://drive.google.com/uc?export=view&id=1AVC7MAXBkbSGq4bf9WI65UShQt8VQJDQ',
+      'https://drive.google.com/uc?export=view&id=1CZ9Ch-nmeuX_neetgo-V5lfBi3flwzp7',
+      'https://drive.google.com/uc?export=view&id=1HRJFqs4eYJ06-85_0IVPXLu1en_c9_H1',
+      'https://drive.google.com/uc?export=view&id=10Hj4epVzAp-oBhxTIeWctVIa21kg0rjB',
+      'https://drive.google.com/uc?export=view&id=1JoAIX8N2C3TkuhZIuq4oy_gwPrKfkKI4',
+      'https://drive.google.com/uc?export=view&id=12xpnAvYVxzniYF5jAvYeDppiFM-n4fDX',
+      'https://drive.google.com/uc?export=view&id=1g7WrsXdoApJdL2fXLE3ExNlYQX0PA62f',
+      'https://drive.google.com/uc?export=view&id=1KmJj-rhX8EYHmTMhnLFv9NRH-NAXLFJ4',
+      'https://drive.google.com/uc?export=view&id=1L7qfqr14w2Bxzg0YH33g2K6n4By8HQvC',
+      'https://drive.google.com/uc?export=view&id=1jP-cr1MQyQXLZYZXocls536JRwDFSX5r',
+      'https://drive.google.com/uc?export=view&id=1K1xsiu02gGw-5VwlWiJY2F736mWK-4aQ',
+      'https://drive.google.com/uc?export=view&id=1JY6OaN_q6meFeRz1Ta8DHW6wuzKROGPB',
+      'https://drive.google.com/uc?export=view&id=1xF6WRjZQ1gpWB7vyVKKW2EyQISvJUoZr',
+    ];
+
+    // Add translations here as you get them — key = page index (0-based), value = English translation
+    const TRANSLATIONS = {
+      0: 'Yokohama all-men\'s yacht race',
+      1: 'Riding to Kamakura',
+      2: 'Koganei Park — Sawa-chan brought water!',
+      3: 'Driving to Karuizawa',
+      4: 'South Karuizawa Golf Course — 19th hole clubhouse for coffee',
+      5: '1957, May 26 — cycling to Jindaiji Temple',
+      6: 'Company trip to Hayama beach',
+      7: 'Cycling — found a snake on the road!',
+    };
+
+    let currentPage = 0;
+    const totalPages = PAGES.length;
+
+    // ── BUILD GRID ──
+    function buildGrid() {
+      const grid = document.getElementById('albumsGrid');
+      for (let i = 0; i < 15; i++) {
+        const div = document.createElement('div');
+        div.className = 'album-thumb';
+        if (i === 0) {
+          div.onclick = () => openAlbum();
+          div.innerHTML = `
+            <div class="cover-wrap">
+              <img src="${COVER_IMG}" alt="Album 10" onerror="this.style.display='none'" />
+            </div>
+            <div class="album-label">Album 10</div>
+          `;
+        } else {
+          div.style.opacity = '0.3';
+          div.style.pointerEvents = 'none';
+          div.innerHTML = `<div class="cover-wrap"><div class="placeholder-cover"></div></div><div class="album-label"></div>`;
+        }
+        grid.appendChild(div);
+      }
+    }
+
+    // ── NAVIGATION ──
+    function goTo(screen) {
+      document.querySelectorAll('.screen').forEach(s => {
+        s.classList.remove('active');
+        s.style.display = 'none';
+      });
+      const el = document.getElementById(screen + '-screen');
+      el.style.display = screen === 'detail' || screen === 'reader' ? 'flex' : 'block';
+      el.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function openAlbum() {
+      document.getElementById('coverLargeImg').src = COVER_IMG;
+      goTo('detail');
+    }
+
+    function openReader() {
+      currentPage = 0;
+      renderPage();
+      goTo('reader');
+    }
+
+    // ── PAGE RENDERING ──
+    function renderPage() {
+      const img = document.getElementById('spreadImg');
+      img.src = PAGES[currentPage];
+
+      const indicator = document.getElementById('pageIndicator');
+      indicator.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+
+      document.getElementById('prevBtn').classList.toggle('disabled', currentPage === 0);
+      document.getElementById('nextBtn').classList.toggle('disabled', currentPage === totalPages - 1);
+
+      renderTranslationHint();
+    }
+
+    function renderTranslationHint() {
+      const existing = document.getElementById('trans-hint');
+      if (existing) existing.remove();
+
+      const translation = TRANSLATIONS[currentPage];
+      if (!translation) return;
+
+      const container = document.querySelector('.spread-container');
+      const hint = document.createElement('div');
+      hint.id = 'trans-hint';
+      hint.style.cssText = `
+        position:absolute; bottom:0; left:0; right:0; height:18%;
+        cursor:default; z-index:10;
+      `;
+      hint.dataset.translation = translation;
+      hint.addEventListener('mouseenter', showTooltip);
+      hint.addEventListener('mouseleave', hideTooltip);
+      hint.addEventListener('mousemove', moveTooltip);
+      container.appendChild(hint);
+    }
+
+    function changePage(dir) {
+      const newPage = currentPage + dir;
+      if (newPage < 0 || newPage >= totalPages) return;
+
+      const img = document.getElementById('spreadImg');
+      img.classList.add(dir > 0 ? 'turning' : 'turning-back');
+
+      setTimeout(() => {
+        currentPage = newPage;
+        renderPage();
+        img.classList.remove('turning', 'turning-back');
+      }, 220);
+    }
+
+    // ── ZOOM ──
+    function openZoom() {
+      document.getElementById('zoom-img').src = PAGES[currentPage];
+      document.getElementById('zoom-overlay').classList.add('active');
+    }
+
+    function closeZoom() {
+      document.getElementById('zoom-overlay').classList.remove('active');
+    }
+
+    // ── TOOLTIP ──
+    function showTooltip(e) {
+      const tip = document.getElementById('tooltip');
+      tip.textContent = e.currentTarget.dataset.translation;
+      tip.style.display = 'block';
+      moveTooltip(e);
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip').style.display = 'none';
+    }
+
+    function moveTooltip(e) {
+      const tip = document.getElementById('tooltip');
+      tip.style.left = (e.clientX + 14) + 'px';
+      tip.style.top = (e.clientY - 14) + 'px';
+    }
+
+    // ── KEYBOARD ──
+    document.addEventListener('keydown', e => {
+      if (document.getElementById('reader-screen').classList.contains('active')) {
+        if (e.key === 'ArrowRight') changePage(1);
+        if (e.key === 'ArrowLeft') changePage(-1);
+      }
+      if (e.key === 'Escape') closeZoom();
+    });
+
+    // ── INIT ──
+    buildGrid();
+  </script>
+</body>
+</html>
